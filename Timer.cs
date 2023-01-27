@@ -300,9 +300,9 @@ public partial class Timer : IDisposable
 		}
 	}
 
-	public static Dictionary<string, Timer> AllTimers() => activeTimers;
+	public static Dictionary<string, Timer> All() => activeTimers;
 
-	public static void PrintTimers()
+	public static void PrintAll()
 	{
 		foreach( var timer in activeTimers )
 			Log.Info($"{timer.Key}  =>  delay: {timer.Value.delay}, repetitions: {timer.Value.repetitions}, status: {timer.Value.status}" );
