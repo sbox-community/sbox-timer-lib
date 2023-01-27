@@ -32,7 +32,7 @@ void Timer.PrintAll()
 
 ```
 
-#Example
+# Example
 
 ```csharp
 Timer.Simple( 1f, () =>
