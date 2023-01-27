@@ -82,7 +82,7 @@ public partial class Timer : IDisposable
 						return;
 					case (Process.Pause):
 						newCTS();
-						pausedDelay = MathF.Max(delay - (Time.Now - nextExecution), 0f);
+						pausedDelay = MathF.Max( delay - (Time.Now - nextExecution), 0f );
 						continue;
 					case (Process.UnPause):
 						newCTS();
@@ -105,7 +105,7 @@ public partial class Timer : IDisposable
 				}
 			}
 
-			if( pausedDelay != 0f )
+			if ( pausedDelay != 0f )
 				pausedDelay = 0f;
 
 			if ( !Game.InGame )
@@ -114,7 +114,11 @@ public partial class Timer : IDisposable
 				return;
 			}
 
-			func();
+			try
+			{
+				func();
+			}
+			catch { }
 
 			if ( repetitions != -1 && repetitions-- == 0 )
 			{
@@ -132,7 +136,7 @@ public partial class Timer : IDisposable
 
 	public void Dispose()
 	{
-		if (!isDisposed && !duplicated )
+		if ( !isDisposed && !duplicated )
 			activeTimers.Remove( id );
 
 		Dispose( true );
@@ -148,7 +152,7 @@ public partial class Timer : IDisposable
 				CTS?.Cancel();
 				CTS?.Dispose();
 				CTS = null;
-				
+
 				_ = TCS?.TrySetCanceled();
 				TCS = null;
 
@@ -177,7 +181,7 @@ public partial class Timer : IDisposable
 		}
 	}
 
-	public static void Simple( float delay, Action func, bool threaded = false ) =>	new Timer( delay, Guid.NewGuid().ToString(), 0, func, threaded );
+	public static void Simple( float delay, Action func, bool threaded = false ) => new Timer( delay, Guid.NewGuid().ToString(), 0, func, threaded );
 
 	public static void Create( string id, float delay, int repetitions, Action func, bool threaded = false ) => new Timer( delay, id, repetitions == 0 ? -1 : repetitions - 1, func, threaded );
 
@@ -203,7 +207,7 @@ public partial class Timer : IDisposable
 		{
 			if ( Exists( id ) )
 			{
-				if( delay is not null )
+				if ( delay is not null )
 					activeTimers[id].delay = delay.Value;
 
 				if ( repetitions is not null )
@@ -226,7 +230,7 @@ public partial class Timer : IDisposable
 		}
 	}
 
-	public static bool Pause( string id ) 
+	public static bool Pause( string id )
 	{
 		lock ( activeTimers )
 		{
@@ -256,7 +260,8 @@ public partial class Timer : IDisposable
 		}
 	}
 
-	public static bool Toggle( string id ) {
+	public static bool Toggle( string id )
+	{
 		lock ( activeTimers )
 		{
 			if ( Exists( id ) )
@@ -271,7 +276,8 @@ public partial class Timer : IDisposable
 		}
 	}
 
-	public static bool Start( string id ) {
+	public static bool Start( string id )
+	{
 
 		lock ( activeTimers )
 		{
@@ -286,7 +292,8 @@ public partial class Timer : IDisposable
 		}
 	}
 
-	public static bool Stop( string id ) {
+	public static bool Stop( string id )
+	{
 		lock ( activeTimers )
 		{
 			if ( Exists( id ) )
@@ -304,7 +311,7 @@ public partial class Timer : IDisposable
 
 	public static void PrintAll()
 	{
-		foreach( var timer in activeTimers )
-			Log.Info($"{timer.Key}  =>  delay: {timer.Value.delay}, repetitions: {timer.Value.repetitions}, status: {timer.Value.status}" );
+		foreach ( var timer in activeTimers )
+			Log.Info( $"{timer.Key}  =>  delay: {timer.Value.delay}, repetitions: {timer.Value.repetitions}, status: {timer.Value.status}" );
 	}
 }
