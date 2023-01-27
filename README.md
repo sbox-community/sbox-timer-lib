@@ -31,3 +31,20 @@ Dictionary<string, Timer> Timer.All()
 void Timer.PrintAll()
 
 ```
+
+# Example
+
+```csharp
+Timer.Simple( 1f, () =>
+{
+  ...
+} );
+    
+Timer.Create( "identity", 1f, 10, () =>
+{
+  ...
+} );
+
+Timer.Simple( 1f, func, threaded: true );
+
+```
