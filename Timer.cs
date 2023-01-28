@@ -188,7 +188,7 @@ public partial class Timer : IDisposable
 			Simple( delay, func );
 	}
 
-	async public static void Simple( float delay, Action func )
+	async private static void Simple( float delay, Action func )
 	{
 		await Task.Delay( TimeSpan.FromSeconds( delay ) );
 
