@@ -45,6 +45,10 @@ public partial class Timer : IDisposable
 		else
 			Loop();
 	}
+	~Timer()
+	{
+		Dispose( true );
+	}
 
 	private async void Loop()
 	{
@@ -116,7 +120,7 @@ public partial class Timer : IDisposable
 
 			try
 			{
-				func();
+				func?.Invoke();
 			}
 			catch { }
 
@@ -126,12 +130,6 @@ public partial class Timer : IDisposable
 				return;
 			}
 		}
-	}
-
-	private void newCTS()
-	{
-		CTS?.Dispose();
-		CTS = new();
 	}
 
 	public void Dispose()
@@ -163,9 +161,10 @@ public partial class Timer : IDisposable
 		}
 	}
 
-	~Timer()
+	private void newCTS()
 	{
-		Dispose( true );
+		CTS?.Dispose();
+		CTS = new();
 	}
 
 	public static bool Remove( string id )
@@ -181,7 +180,24 @@ public partial class Timer : IDisposable
 		}
 	}
 
-	public static void Simple( float delay, Action func, bool threaded = false ) => new Timer( delay, Guid.NewGuid().ToString(), 0, func, threaded );
+	public static void Simple( float delay, Action func, bool threaded = false )
+	{
+		if ( threaded )
+			GameTask.RunInThreadAsync( () => { Simple( delay, func ); } );
+		else
+			Simple( delay, func );
+	}
+
+	async public static void Simple( float delay, Action func )
+	{
+		await Task.Delay( TimeSpan.FromSeconds( delay ) );
+
+		try
+		{
+			func?.Invoke();
+		}
+		catch { }
+	}
 
 	public static void Create( string id, float delay, int repetitions, Action func, bool threaded = false ) => new Timer( delay, id, repetitions == 0 ? -1 : repetitions - 1, func, threaded );
 
@@ -230,36 +246,6 @@ public partial class Timer : IDisposable
 		}
 	}
 
-	public static bool Pause( string id )
-	{
-		lock ( activeTimers )
-		{
-			if ( Exists( id ) )
-			{
-				activeTimers[id].status = Process.Pause;
-				activeTimers[id].CTS.Cancel();
-
-				return true;
-			}
-			return false;
-		}
-	}
-
-	public static bool UnPause( string id )
-	{
-		lock ( activeTimers )
-		{
-			if ( Exists( id ) )
-			{
-				activeTimers[id].status = Process.UnPause;
-				activeTimers[id].CTS.Cancel();
-
-				return true;
-			}
-			return false;
-		}
-	}
-
 	public static bool Toggle( string id )
 	{
 		lock ( activeTimers )
@@ -276,29 +262,18 @@ public partial class Timer : IDisposable
 		}
 	}
 
-	public static bool Start( string id )
-	{
+	public static bool Pause( string id ) => UpdateStatus( id, Process.Pause );
+	public static bool UnPause( string id ) => UpdateStatus( id, Process.UnPause );
+	public static bool Start( string id ) => UpdateStatus( id, Process.Start );
+	public static bool Stop( string id ) => UpdateStatus( id, Process.Stop );
 
-		lock ( activeTimers )
-		{
-			if ( Exists( id ) )
-			{
-				activeTimers[id].status = Process.Start;
-				activeTimers[id].CTS.Cancel();
-
-				return true;
-			}
-			return false;
-		}
-	}
-
-	public static bool Stop( string id )
+	private static bool UpdateStatus( string id, Process status )
 	{
 		lock ( activeTimers )
 		{
 			if ( Exists( id ) )
 			{
-				activeTimers[id].status = Process.Stop;
+				activeTimers[id].status = status;
 				activeTimers[id].CTS.Cancel();
 
 				return true;
