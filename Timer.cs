@@ -149,7 +149,11 @@ public partial class Timer : IDisposable
 			if ( isdisposing )
 			{
 				CTS?.Cancel();
-				CTS?.Dispose();
+				try
+				{
+					CTS?.Dispose();
+				}
+				catch { }
 				CTS = null;
 
 				_ = TCS?.TrySetCanceled();
